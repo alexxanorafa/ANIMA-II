@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ANIMA | Sistema Quântico de Arquétipos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Quântico -->
+    <div class="quantum-field"></div>
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Header -->
+    <header>
+        <div class="status-monitor">SISTEMA_ATIVO // MODO_QUÂNTICO</div>
+        <button class="menu-icon" id="menuBtn" aria-label="Abrir menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </header>
+
+    <!-- Menu Lateral -->
+    <nav class="side-matrix" id="sideMenu" aria-label="Menu de navegação">
+        <div class="matrix-header">ECOSSISTEMA DIGITAL</div>
+        <div class="links-grid">
+            <a href="https://alexxanorafa.github.io/Alquimia-dos-Sentimentos/">ALQUIMIA DOS SENTIMENTOS</a>
+            <a href="https://alexxanorafa.github.io/Almas-Conectadas/">ALMAS CONECTADAS</a>
+            <a href="https://alexxanorafa.github.io/Aneis_da_Sabedoria/">ANÉIS DA SABEDORIA</a>
+            <a href="https://alexxanorafa.github.io/Animais-de-Poder/">ANIMAIS DE PODER</a>
+            <a href="https://alexxanorafa.github.io/Arvore-da-Vida/">ÁRVORE DA VIDA</a>
+            <a href="https://alexxanorafa.github.io/Biblioteca-Onirica/">BIBLIOTECA ONIRICA</a>
+            <a href="https://alexxanorafa.github.io/Buzios/">BUZIOS</a>
+            <a href="https://alexxanorafa.github.io/Cartas-de-Sibila/">CARTAS DE SIBILA</a>
+            <a href="https://alexxanorafa.github.io/Do-you-love-me/">DO YOU LOVE ME?</a>
+            <a href="https://alexxanorafa.github.io/I-Ching-Virtual/">I CHING VIRTUAL</a>
+            <a href="https://alexxanorafa.github.io/Jogo-Didatico-Banco-de-Dados/">JOGO DIDATICO BANCO DE DADOS</a>
+            <a href="https://alexxanorafa.github.io/Jornada-Arquetipica/">JORNADA ARQUETÍPICA</a>
+            <a href="https://alexxanorafa.github.io/Jornadas-Mitologica/">JORNADA MITOLÓGICA</a>
+            <a href="https://alexxanorafa.github.io/Livro-das-Sombras/">LIVRO DAS SOMBRAS</a>
+            <a href="https://alexxanorafa.github.io/Magia-das-Cores/">MAGIA DAS CORES</a>
+            <a href="https://alexxanorafa.github.io/Murmurios-do-Destino/">MURMÚRIOS DO DESTINO</a>
+            <a href="https://alexxanorafa.github.io/O-Construtor-do-Destino/">O CONSTRUTOR DO DESTINO</a>
+            <a href="https://alexxanorafa.github.io/Oraculo-das-Pedras/">ORÁCULO DAS PEDRAS</a>
+            <a href="https://alexxanorafa.github.io/Oraculo-dos-Deuses/">ORÁCULO DOS DEUSES</a>
+            <a href="https://alexxanorafa.github.io/Oraculo-Numerologico/">ORÁCULO NUMEROLÓGICO</a>
+            <a href="https://alexxanorafa.github.io/Pendulo-Divinatorio/">PENDULO DIVINATORIO</a>
+            <a href="https://alexxanorafa.github.io/Portal-das-Almas/">PORTAL DAS ALMAS</a>
+            <a href="https://alexxanorafa.github.io/Runas-Celtas/">RUNAS CELTAS</a>
+            <a href="https://alexxanorafa.github.io/Runas-Estelares/">RUNAS ESTELARES</a>
+            <a href="https://alexxanorafa.github.io/Runas-do-Destino/">RUNAS NÓRDICAS</a>
+            <a href="https://alexxanorafa.github.io/Tabuleiro-Quantico/">TABULEIRO QUANTICO</a>
+            <a href="https://alexxanorafa.github.io/TarodeMarselha/">TARÔ DE MARSELHA</a>
+            <a href="https://alexxanorafa.github.io/Tasseografia/">TASSEOGRAFIA</a>
+            <a href="https://alexxanorafa.github.io/Tempo_e_Sonhos/">TEMPO E SONHOS</a>
+            <a href="https://alexxanorafa.github.io/The-Da-Vinci-Code/">THE DA VINCI CODE</a>
+            <a href="https://alexxanorafa.github.io/Velvet-Quantum/">VELVET QUANTUM</a>
+            <a href="https://alexxanorafa.github.io/Whispering-Shadows/">WHISPERING SHADOWS</a>
+            <a href="https://alexxanorafa.github.io/Whispering-Shadows-2/">WHISPERING SHADOWS 2</a>
+            <a href="https://alexxanorafa.github.io/Whispering-Shadows-3/">WHISPERING SHADOWS 3</a>
+            <a href="https://alexxanorafa.github.io/Xamanismo-Animal/">XAMANISMO ANIMAL</a>
+        </div>
+    </nav>
+
+    <!-- Overlay para fechar menu -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Conteúdo Principal -->
+    <main id="core-engine">
+        <!-- Tela de Introdução -->
+        <section id="sc-intro" class="screen active">
+            <div class="quantum-gate">
+                <h1 class="main-title" data-text="ANIMA">ANIMA</h1>
+                <p class="quantum-tag">SISTEMA QUÂNTICO DE ARQUÉTIPOS</p>
+                <div class="gate-particles"></div>
+            </div>
+            
+            <!-- Botão de Início -->
+            <button class="init-trigger" id="initBtn" aria-label="Iniciar jornada quântica">
+                <span class="btn-pulse"></span>
+                INICIAR JORNADA QUÂNTICA
+            </button>
+        </section>
+
+        <!-- Tela da Roda Quântica -->
+        <section id="sc-wheel" class="screen">
+            <div class="quantum-portal">
+                <div class="portal-ring"></div>
+                <div class="portal-core">
+                    <div id="mainWheel" class="quantum-wheel" role="img" aria-label="Roda quântica de sincronização"></div>
+                </div>
+                <div class="portal-guide">▼</div>
+                
+                <button class="spin-trigger" id="spinBtn" aria-label="Ativar portal quântico">
+                    <span class="spin-glow"></span>
+                    ATIVAR PORTAL QUÂNTICO
+                </button>
+                
+                <div class="quantum-status">
+                    <div class="status-item">
+                        <span>ESTADO:</span>
+                        <span class="status-value">INICIALIZADO</span>
+                    </div>
+                    <div class="status-item">
+                        <span>ENTROPIA:</span>
+                        <span class="status-value">0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tela do Quiz Quântico -->
+        <section id="sc-quiz" class="screen">
+            <div class="quantum-interface">
+                <!-- Header da Jornada -->
+                <div class="journey-header">
+                    <div class="sephirah-tracker" id="sephirah-tracker">
+                        <span class="tracker-label">SEPHIRAH:</span>
+                        <span class="tracker-value" id="current-sephirah">MALKUTH</span>
+                    </div>
+                    <div class="question-counter" id="question-counter">
+                        <span class="counter-label">QUESTÃO</span>
+                        <span class="counter-value">01</span>
+                    </div>
+                    <div class="quantum-coherence" id="quantum-coherence">
+                        <span class="coherence-label">COERÊNCIA:</span>
+                        <span class="coherence-value">0%</span>
+                    </div>
+                </div>
+                
+                <!-- Portal da Pergunta -->
+                <div class="question-portal">
+                    <div class="portal-frame">
+                        <div class="portal-glow"></div>
+                        <div class="portal-content">
+                            <h2 id="q-text">CARREGANDO PERGUNTA QUÂNTICA...</h2>
+                            <div class="portal-subtitle" id="q-portal">INICIALIZANDO SISTEMA</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opções Quânticas -->
+                <div id="q-options" class="quantum-options" role="list"></div>
+                
+                <!-- Progresso na Árvore da Vida -->
+                <div class="tree-progress">
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress-fill"></div>
+                        <div class="progress-milestones">
+                            <div class="milestone-dot" data-milestone="n"></div>
+                            <div class="milestone-dot" data-milestone="c"></div>
+                            <div class="milestone-dot" data-milestone="a"></div>
+                            <div class="milestone-dot" data-milestone="s"></div>
+                            <div class="milestone-dot" data-milestone="i"></div>
+                            <div class="milestone-dot" data-milestone="d"></div>
+                            <div class="milestone-dot" data-milestone="p"></div>
+                            <div class="milestone-dot" data-milestone="e"></div>
+                            <div class="milestone-dot" data-milestone="f"></div>
+                        </div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>MALKUTH</span>
+                        <span>KETHER</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tela da Árvore da Vida -->
+        <section id="sc-tree" class="screen">
+            <div class="tree-of-life-container">
+                <!-- Header da Árvore -->
+                <div class="tree-header">
+                    <div class="quantum-state">
+                        <span class="state-label">ESTADO QUÂNTICO:</span>
+                        <span class="state-value" id="quantum-state">SUPERPOSIÇÃO</span>
+                    </div>
+                    <div class="tree-progress-indicator">
+                        <span class="indicator-label">JORNADA:</span>
+                        <span class="indicator-value" id="journey-progress">0/10 SEPHIROTH</span>
+                    </div>
+                    <div class="animal-probability">
+                        <span class="probability-label">PROBABILIDADE:</span>
+                        <span class="probability-value" id="probability-value">--%</span>
+                    </div>
+                </div>
+                
+                <!-- Canvas da Árvore -->
+                <div class="tree-canvas-wrapper">
+                    <canvas id="tree-canvas"></canvas>
+                    
+                    <!-- Overlay de Revelações -->
+                    <div class="revelations-overlay">
+                        <!-- Nome do Animal -->
+                        <div class="revelation-card" id="revelation-name" style="display: none;">
+                            <div class="revelation-header">
+                                <div class="revelation-icon">🔤</div>
+                                <div class="revelation-title">NOME REVELADO</div>
+                            </div>
+                            <div class="revelation-content">
+                                <div class="revelation-value" id="animal-name">---</div>
+                                <div class="revelation-hint" id="animal-hint">SIGNIFICADO OCULTO</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chakra -->
+                        <div class="revelation-card" id="revelation-chakra" style="display: none;">
+                            <div class="revelation-header">
+                                <div class="revelation-icon">🌀</div>
+                                <div class="revelation-title">CENTRO ENERGÉTICO</div>
+                            </div>
+                            <div class="revelation-content">
+                                <div class="revelation-value" id="animal-chakra">---</div>
+                                <div class="chakra-symbol" id="chakra-symbol">●</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estatísticas -->
+                        <div class="stats-revelation" id="stats-revelation" style="display: none;">
+                            <div class="stats-title">ATRIBUTOS QUÂNTICOS</div>
+                            <div class="stats-grid">
+                                <div class="stat-item" id="stat-action">
+                                    <div class="stat-header">
+                                        <span class="stat-label">AÇÃO</span>
+                                        <span class="stat-value" id="action-value">--</span>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" id="action-fill"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-item" id="stat-sensibility">
+                                    <div class="stat-header">
+                                        <span class="stat-label">SENSIBILIDADE</span>
+                                        <span class="stat-value" id="sensibility-value">--</span>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" id="sensibility-fill"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-item" id="stat-intuition">
+                                    <div class="stat-header">
+                                        <span class="stat-label">INTUIÇÃO</span>
+                                        <span class="stat-value" id="intuition-value">--</span>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-fill" id="intuition-fill"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Descrição -->
+                        <div class="description-revelation" id="revelation-desc" style="display: none;">
+                            <div class="description-header">
+                                <div class="description-icon">📜</div>
+                                <div class="description-title">DESCRIÇÃO ARQUETÍPICA</div>
+                            </div>
+                            <div class="description-content">
+                                <p id="animal-description">Carregando descrição quântica...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Controles Quânticos -->
+                <div class="quantum-controls">
+                    <div class="control-row">
+                        <button class="quantum-btn observe-btn" id="observe-btn" disabled>
+                            <span class="btn-icon">👁️</span>
+                            <span class="btn-text">OBSERVAR (0/9)</span>
+                        </button>
+                        
+                        <button class="quantum-btn continue-btn" id="continue-btn">
+                            <span class="btn-icon">⏭️</span>
+                            <span class="btn-text">CONTINUAR JORNADA</span>
+                        </button>
+                    </div>
+                    
+                    <div class="control-row">
+                        <button class="quantum-btn complete-btn" id="complete-btn" disabled>
+                            <span class="btn-icon">⚡</span>
+                            <span class="btn-text">COMPLETAR ÁRVORE</span>
+                        </button>
+                        
+                        <button class="quantum-btn restart-btn" id="restartBtn">
+                            <span class="btn-icon">🔄</span>
+                            <span class="btn-text">NOVA JORNADA</span>
+                        </button>
+                    </div>
+                    
+                    <div class="quantum-info">
+                        <div class="info-item">
+                            <span class="info-label">QUESTÕES RESPONDIDAS:</span>
+                            <span class="info-value" id="questions-answered">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ENTROPIA ACUMULADA:</span>
+                            <span class="info-value" id="total-entropy">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script src="animals-data.js"></script>
+    <script src="questions-data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
