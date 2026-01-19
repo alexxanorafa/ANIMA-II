@@ -4,11 +4,11 @@
 // ========== CONFIGURAÇÃO DO SISTEMA ==========
 const SYSTEM_CONFIG = {
     maxQuestions: 60,
-    minQuestionsForRevelation: 8,
-    milestonesToComplete: 5, // Número mínimo de milestones para finalizar
-    autoRevealThreshold: 0.85, // 85% de probabilidade máxima
-    observationThreshold: 3, // Minimo de milestones para observar
-    questionBatches: 6 // Questões por Sephirah
+    minQuestionsForRevelation: 6, // Reduzido de 8 para 6
+    milestonesToComplete: 3, // Reduzido de 5 para 3
+    autoRevealThreshold: 0.8, // 80%
+    observationThreshold: 2, // Reduzido de 3 para 2
+    questionBatches: 6
 };
 
 // ========== SISTEMA DE ESTADO GLOBAL ==========
@@ -25,8 +25,8 @@ const STATE = {
         activatedSephiroth: new Set(['MALKUTH']),
         completedMilestones: new Set(),
         milestoneThresholds: {
-            'n': 3, 'c': 5, 'a': 7, 's': 9, 'i': 11,
-            'd': 13, 'p': 15, 'e': 17, 'f': 19
+            'n': 1, 'c': 2, 'a': 3, 's': 4, 'i': 5,
+            'd': 6, 'p': 7, 'e': 8, 'f': 9
         },
         milestoneToSephirah: {
             'n': 'YESOD', 'c': 'HOD', 'a': 'NETZACH',
@@ -178,35 +178,36 @@ async function initApp() {
 
 // ========== SISTEMA DE QUESTÕES FLEXÍVEL ==========
 function shouldContinueQuiz() {
-    // Critérios para parar o quiz:
-    
-    // 1. Se já revelamos milestones suficientes
-    if (STATE.treeJourney.completedMilestones.size >= SYSTEM_CONFIG.milestonesToComplete) {
-        console.log('[QUIZ] Milestones suficientes alcançados:', STATE.treeJourney.completedMilestones.size);
+    // Se já atingimos o número máximo de questões, parar
+    if (STATE.currentQuestion >= SYSTEM_CONFIG.maxQuestions) {
         return false;
     }
-    
-    // 2. Se temos alta probabilidade em um animal
-    if (STATE.quantumState.maxProbability >= SYSTEM_CONFIG.autoRevealThreshold) {
-        console.log('[QUIZ] Probabilidade alta alcançada:', STATE.quantumState.maxProbability);
+
+    // Se já temos um animal colapsado, parar
+    if (STATE.quantumState.collapsedAnimal) {
         return false;
     }
-    
-    // 3. Se atingiu o número mínimo de questões
-    if (STATE.currentQuestion < SYSTEM_CONFIG.minQuestionsForRevelation) {
-        return true;
+
+    // Se o usuário já respondeu pelo menos o mínimo de questões
+    if (STATE.currentQuestion >= SYSTEM_CONFIG.minQuestionsForRevelation) {
+        // Se a probabilidade máxima for alta, parar
+        if (STATE.quantumState.maxProbability >= SYSTEM_CONFIG.autoRevealThreshold) {
+            return false;
+        }
+
+        // Se temos alguns milestones e a probabilidade é razoável, parar
+        if (STATE.treeJourney.completedMilestones.size >= 3 && STATE.quantumState.maxProbability >= 0.6) {
+            return false;
+        }
+
+        // Se a coerência está alta e temos pelo menos 2 milestones, parar
+        if (STATE.quantumState.coherence >= 0.6 && STATE.treeJourney.completedMilestones.size >= 2) {
+            return false;
+        }
     }
-    
-    // 4. Decisão baseada na coerência quântica e progresso
-    const progressScore = calculateProgressScore();
-    
-    // Continua se:
-    // - Ainda tem questões disponíveis
-    // - Progresso não está muito alto
-    // - Coerência ainda baixa
-    return STATE.currentQuestion < SYSTEM_CONFIG.maxQuestions && 
-           progressScore < 0.8 &&
-           STATE.quantumState.coherence < 0.7;
+
+    // Caso contrário, continuar
+    return true;
 }
 
 function calculateProgressScore() {
@@ -475,7 +476,7 @@ function updateQuantumState(animalSlug) {
     const superposition = STATE.quantumState.superposition;
     
     // Calcular incremento baseado na coerência e número de respostas
-    const baseIncrement = 0.15;
+    const baseIncrement = 0.25;
     const coherenceBonus = STATE.quantumState.coherence * 0.1;
     const totalAnswersFactor = Math.min(0.1, STATE.totalAnswers * 0.01);
     const increment = baseIncrement + coherenceBonus + totalAnswersFactor;
@@ -490,7 +491,7 @@ function updateQuantumState(animalSlug) {
             total += newProb;
         } else {
             // Reduzir gradualmente outros
-            const reduction = Math.max(0.02, prob * 0.7);
+            const reduction = Math.max(0.01, prob * 0.5); // Reduzido de 0.02 e 0.7 para 0.01 e 0.5
             const newProb = Math.max(0.02, prob - (reduction / (superposition.size - 1)));
             superposition.set(animal, newProb);
             total += newProb;

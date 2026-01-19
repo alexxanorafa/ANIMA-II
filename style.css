@@ -351,11 +351,12 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* Adicionar para centralizar verticalmente */
     gap: 30px;
     width: 100%;
     max-width: 500px;
+    height: 100%; /* Usar a altura total da tela */
 }
-
 .portal-ring {
     width: 280px;
     height: 280px;
@@ -365,15 +366,13 @@ header {
     animation: ringRotate 20s linear infinite;
 }
 
-@keyframes ringRotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
 .portal-core {
     position: relative;
     width: 220px;
     height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .quantum-wheel {
@@ -1259,11 +1258,6 @@ header {
     .portal-core {
         width: 180px;
         height: 180px;
-    }
-    
-    .portal-ring {
-        width: 230px;
-        height: 230px;
     }
     
     .quantum-status {
