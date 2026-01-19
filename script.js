@@ -1,4 +1,15 @@
-// script.js - ANIMA | Sistema Quântico de Revelação v3.0
+// script.js - ANIMA | Sistema Quântico de Revelação v3.1
+// Sistema flexível - não obriga a 60 questões
+
+// ========== CONFIGURAÇÃO DO SISTEMA ==========
+const SYSTEM_CONFIG = {
+    maxQuestions: 60,
+    minQuestionsForRevelation: 8,
+    milestonesToComplete: 5, // Número mínimo de milestones para finalizar
+    autoRevealThreshold: 0.85, // 85% de probabilidade máxima
+    observationThreshold: 3, // Minimo de milestones para observar
+    questionBatches: 6 // Questões por Sephirah
+};
 
 // ========== SISTEMA DE ESTADO GLOBAL ==========
 const STATE = {
@@ -21,7 +32,8 @@ const STATE = {
             'n': 'YESOD', 'c': 'HOD', 'a': 'NETZACH',
             's': 'TIPHARETH', 'i': 'GEBURAH', 'd': 'CHESED',
             'p': 'BINAH', 'e': 'CHOCHMAH', 'f': 'KETHER'
-        }
+        },
+        currentBatch: 0
     },
     
     // Sistema Quântico
@@ -30,11 +42,12 @@ const STATE = {
         collapsedAnimal: null,
         observationPoints: 0,
         entropy: 0,
-        coherence: 0
+        coherence: 0,
+        maxProbability: 0
     },
     
-    // Configurações
-    maxQuestions: 60,
+    // Progresso
+    totalAnswers: 0,
     currentAnimal: null
 };
 
@@ -152,17 +165,77 @@ async function initApp() {
     initMenu();
     initQuantumWheel();
     initTreeCanvas();
-    
-    // Configurar eventos PRIMEIRO
     setupEventListeners();
     
     // Inicializar partículas
     initParticles();
     
-    // Atualizar botão de início
+    // Atualizar interface
     updateInitButton();
     
     console.log('[ANIMA] Sistema quântico pronto para sincronização');
+}
+
+// ========== SISTEMA DE QUESTÕES FLEXÍVEL ==========
+function shouldContinueQuiz() {
+    // Critérios para parar o quiz:
+    
+    // 1. Se já revelamos milestones suficientes
+    if (STATE.treeJourney.completedMilestones.size >= SYSTEM_CONFIG.milestonesToComplete) {
+        console.log('[QUIZ] Milestones suficientes alcançados:', STATE.treeJourney.completedMilestones.size);
+        return false;
+    }
+    
+    // 2. Se temos alta probabilidade em um animal
+    if (STATE.quantumState.maxProbability >= SYSTEM_CONFIG.autoRevealThreshold) {
+        console.log('[QUIZ] Probabilidade alta alcançada:', STATE.quantumState.maxProbability);
+        return false;
+    }
+    
+    // 3. Se atingiu o número mínimo de questões
+    if (STATE.currentQuestion < SYSTEM_CONFIG.minQuestionsForRevelation) {
+        return true;
+    }
+    
+    // 4. Decisão baseada na coerência quântica e progresso
+    const progressScore = calculateProgressScore();
+    
+    // Continua se:
+    // - Ainda tem questões disponíveis
+    // - Progresso não está muito alto
+    // - Coerência ainda baixa
+    return STATE.currentQuestion < SYSTEM_CONFIG.maxQuestions && 
+           progressScore < 0.8 &&
+           STATE.quantumState.coherence < 0.7;
+}
+
+function calculateProgressScore() {
+    // Calcula um score de progresso baseado em múltiplos fatores
+    const milestoneProgress = STATE.treeJourney.completedMilestones.size / 9;
+    const probabilityProgress = STATE.quantumState.maxProbability;
+    const questionProgress = STATE.currentQuestion / SYSTEM_CONFIG.maxQuestions;
+    const coherenceProgress = STATE.quantumState.coherence;
+    
+    // Média ponderada
+    return (milestoneProgress * 0.4) + 
+           (probabilityProgress * 0.3) + 
+           (questionProgress * 0.2) + 
+           (coherenceProgress * 0.1);
+}
+
+// ========== INICIALIZAÇÃO DA SUPERPOSIÇÃO QUÂNTICA ==========
+function initializeQuantumSuperposition() {
+    const animals = Object.keys(STATE.animals);
+    const initialProbability = 1 / animals.length;
+    
+    animals.forEach(animal => {
+        STATE.quantumState.superposition.set(animal, initialProbability);
+    });
+    
+    STATE.quantumState.maxProbability = initialProbability;
+    
+    console.log('[QUANTUM] Superposição inicializada com', 
+        STATE.quantumState.superposition.size, 'animais');
 }
 
 // ========== CONFIGURAÇÃO DE EVENT LISTENERS ==========
@@ -172,6 +245,12 @@ function setupEventListeners() {
     if (initBtn) {
         console.log('[EVENTS] Configurando botão de início...');
         initBtn.addEventListener('click', handleInitClick);
+    }
+    
+    // Botão SPIN (Roda Quântica)
+    const spinBtn = document.getElementById('spinBtn');
+    if (spinBtn) {
+        spinBtn.addEventListener('click', handleSpinClick);
     }
     
     // Botão de observação
@@ -184,7 +263,7 @@ function setupEventListeners() {
     const continueBtn = document.getElementById('continue-btn');
     if (continueBtn) {
         continueBtn.addEventListener('click', () => {
-            if (STATE.currentQuestion < STATE.maxQuestions) {
+            if (shouldContinueQuiz()) {
                 showScreen('sc-quiz');
                 renderQuestion();
             }
@@ -202,15 +281,9 @@ function setupEventListeners() {
     if (restartBtn) {
         restartBtn.addEventListener('click', resetSystem);
     }
-    
-    // Botão spin (roda quântica)
-    const spinBtn = document.getElementById('spinBtn');
-    if (spinBtn) {
-        spinBtn.addEventListener('click', handleSpinClick);
-    }
 }
 
-// ========== HANDLERS ESPECÍFICOS ==========
+// ========== HANDLERS DE EVENTOS ==========
 function handleInitClick() {
     console.log('[INIT] Iniciando jornada quântica...');
     
@@ -239,13 +312,13 @@ function handleSpinClick() {
     
     // Animação da roda
     const spins = 720 + Math.floor(Math.random() * 720);
-    wheel.style.transition = 'transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)';
+    wheel.style.transition = 'transform 3.5s cubic-bezier(0.2, 0.8, 0.3, 1)';
     wheel.style.transform = `rotate(${spins}deg)`;
     
     // Efeitos visuais
     const portalRing = document.querySelector('.portal-ring');
     if (portalRing) {
-        portalRing.style.animationDuration = '5s';
+        portalRing.style.animationDuration = '4s';
     }
     
     const quantumStatus = document.querySelector('.quantum-status');
@@ -273,15 +346,51 @@ function handleSpinClick() {
                 quantumStatus.style.opacity = '1';
             }
         }, 100);
-    }, 3800);
+    }, 3500);
+}
+
+// ========== SISTEMA DE MENU ==========
+function initMenu() {
+    const menuBtn = document.getElementById('menuBtn');
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('menuOverlay');
+    
+    if (!menuBtn || !sideMenu || !overlay) return;
+    
+    const toggleMenu = () => {
+        const isActive = sideMenu.classList.toggle('active');
+        overlay.classList.toggle('active');
+        menuBtn.setAttribute('aria-expanded', isActive);
+    };
+    
+    menuBtn.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu);
+    
+    // Fechar menu com ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sideMenu.classList.contains('active')) {
+            toggleMenu();
+        }
+    });
+}
+
+// ========== RODA QUÂNTICA ==========
+function initQuantumWheel() {
+    const wheel = document.getElementById('mainWheel');
+    if (!wheel) return;
+    
+    // Configuração inicial da roda
+    wheel.style.transform = 'rotate(0deg)';
 }
 
 // ========== SISTEMA DE QUESTÕES ==========
 function renderQuestion() {
-    // Verificar se completou a jornada
-    if (STATE.treeJourney.completedMilestones.size >= 9 || 
-        STATE.currentQuestion >= STATE.maxQuestions) {
-        showTreeJourney();
+    // Verificar se deve continuar
+    if (!shouldContinueQuiz()) {
+        console.log('[QUIZ] Transicionando para Árvore da Vida');
+        setTimeout(() => {
+            showTreeJourney();
+        }, 500);
         return;
     }
     
@@ -307,7 +416,7 @@ function updateQuestionUI(question) {
     
     // Atualizar subtítulo com Sephirah atual
     const sephirahName = TREE_OF_LIFE.sephiroth[STATE.treeJourney.currentSephirah].name;
-    qPortal.textContent = `SEPHIRAH: ${sephirahName}`;
+    qPortal.textContent = `${sephirahName} • QUESTÃO ${STATE.currentQuestion + 1}`;
     
     // Atualizar contador
     if (questionCounter) {
@@ -337,6 +446,7 @@ function updateQuestionUI(question) {
 function handleAnswer(animalSlug, answerText) {
     // Atualizar pontuação
     STATE.scores[animalSlug] = (STATE.scores[animalSlug] || 0) + 1;
+    STATE.totalAnswers++;
     
     // Atualizar estado quântico
     updateQuantumState(animalSlug);
@@ -351,54 +461,52 @@ function handleAnswer(animalSlug, answerText) {
     STATE.currentQuestion++;
     
     // Renderizar próxima questão ou mostrar resultados
-    if (STATE.currentQuestion < STATE.maxQuestions && 
-        STATE.treeJourney.completedMilestones.size < 9) {
-        setTimeout(renderQuestion, 300);
-    } else {
-        setTimeout(() => {
+    setTimeout(() => {
+        if (shouldContinueQuiz()) {
+            renderQuestion();
+        } else {
             showTreeJourney();
-        }, 500);
-    }
+        }
+    }, 300);
 }
 
 // ========== SISTEMA QUÂNTICO ==========
 function updateQuantumState(animalSlug) {
     const superposition = STATE.quantumState.superposition;
-    const totalQuestions = STATE.currentQuestion + 1;
     
-    // Calcular incremento baseado na coerência
-    const increment = 0.15 + (STATE.quantumState.coherence * 0.05);
+    // Calcular incremento baseado na coerência e número de respostas
+    const baseIncrement = 0.15;
+    const coherenceBonus = STATE.quantumState.coherence * 0.1;
+    const totalAnswersFactor = Math.min(0.1, STATE.totalAnswers * 0.01);
+    const increment = baseIncrement + coherenceBonus + totalAnswersFactor;
     
     // Atualizar probabilidades
+    let total = 0;
     superposition.forEach((prob, animal) => {
         if (animal === animalSlug) {
             // Aumentar probabilidade do animal escolhido
-            superposition.set(animal, Math.min(0.95, prob + increment));
+            const newProb = Math.min(0.95, prob + increment);
+            superposition.set(animal, newProb);
+            total += newProb;
         } else {
             // Reduzir gradualmente outros
-            superposition.set(animal, Math.max(0.05, prob * 0.85));
+            const reduction = Math.max(0.02, prob * 0.7);
+            const newProb = Math.max(0.02, prob - (reduction / (superposition.size - 1)));
+            superposition.set(animal, newProb);
+            total += newProb;
         }
     });
     
     // Normalizar probabilidades
-    normalizeProbabilities();
+    superposition.forEach((prob, animal) => {
+        superposition.set(animal, prob / total);
+    });
     
     // Atualizar entropia e coerência
     updateQuantumMetrics();
     
     // Atualizar display
     updateQuantumDisplay();
-}
-
-function normalizeProbabilities() {
-    const superposition = STATE.quantumState.superposition;
-    const total = Array.from(superposition.values()).reduce((a, b) => a + b, 0);
-    
-    if (total === 0) return;
-    
-    superposition.forEach((prob, animal) => {
-        superposition.set(animal, prob / total);
-    });
 }
 
 function updateQuantumMetrics() {
@@ -413,29 +521,23 @@ function updateQuantumMetrics() {
         }
     });
     
+    // Calcular máxima probabilidade
+    let maxProb = 0;
+    probabilities.forEach(p => {
+        if (p > maxProb) maxProb = p;
+    });
+    STATE.quantumState.maxProbability = maxProb;
+    
     // Calcular coerência (inverso da entropia normalizada)
     const maxEntropy = Math.log2(superposition.size);
-    const normalizedEntropy = entropy / maxEntropy;
+    const normalizedEntropy = maxEntropy > 0 ? entropy / maxEntropy : 0;
     const coherence = 1 - normalizedEntropy;
     
     STATE.quantumState.entropy = entropy;
-    STATE.quantumState.coherence = coherence;
+    STATE.quantumState.coherence = Math.max(0, Math.min(1, coherence));
 }
 
 function updateQuantumDisplay() {
-    const superposition = STATE.quantumState.superposition;
-    
-    // Encontrar animal mais provável
-    let maxProb = 0;
-    let mostProbableAnimal = null;
-    
-    superposition.forEach((prob, animal) => {
-        if (prob > maxProb) {
-            maxProb = prob;
-            mostProbableAnimal = animal;
-        }
-    });
-    
     // Atualizar valores na interface
     const probabilityElement = document.getElementById('probability-value');
     const coherenceElement = document.getElementById('quantum-coherence');
@@ -443,7 +545,7 @@ function updateQuantumDisplay() {
     const totalEntropy = document.getElementById('total-entropy');
     
     if (probabilityElement) {
-        probabilityElement.textContent = `${Math.round(maxProb * 100)}%`;
+        probabilityElement.textContent = `${Math.round(STATE.quantumState.maxProbability * 100)}%`;
     }
     
     if (coherenceElement) {
@@ -454,11 +556,11 @@ function updateQuantumDisplay() {
     }
     
     if (questionsAnswered) {
-        questionsAnswered.textContent = STATE.currentQuestion + 1;
+        questionsAnswered.textContent = STATE.currentQuestion;
     }
     
     if (totalEntropy) {
-        totalEntropy.textContent = `${Math.round(STATE.quantumState.entropy * 10) / 10} bits`;
+        totalEntropy.textContent = `${Math.round(STATE.quantumState.entropy * 10) / 10}`;
     }
 }
 
@@ -496,30 +598,86 @@ function drawTreeOfLife() {
     // Posições das Sephiroth
     const positions = calculateSephirothPositions(width, height);
     
-    // Desenhar caminhos primeiro
-    drawPaths(ctx, positions);
-    
     // Desenhar Sephiroth
     drawSephiroth(ctx, positions);
+    
+    // Desenhar conexões
+    drawConnections(ctx, positions);
 }
 
 function calculateSephirothPositions(width, height) {
     return {
-        'KETHER': { x: width * 0.5, y: height * 0.1 },
-        'CHOCHMAH': { x: width * 0.25, y: height * 0.25 },
-        'BINAH': { x: width * 0.75, y: height * 0.25 },
-        'CHESED': { x: width * 0.15, y: height * 0.45 },
-        'GEBURAH': { x: width * 0.85, y: height * 0.45 },
-        'TIPHARETH': { x: width * 0.5, y: height * 0.45 },
-        'NETZACH': { x: width * 0.3, y: height * 0.65 },
-        'HOD': { x: width * 0.7, y: height * 0.65 },
-        'YESOD': { x: width * 0.5, y: height * 0.8 },
+        'KETHER': { x: width * 0.5, y: height * 0.15 },
+        'CHOCHMAH': { x: width * 0.25, y: height * 0.3 },
+        'BINAH': { x: width * 0.75, y: height * 0.3 },
+        'CHESED': { x: width * 0.15, y: height * 0.5 },
+        'GEBURAH': { x: width * 0.85, y: height * 0.5 },
+        'TIPHARETH': { x: width * 0.5, y: height * 0.5 },
+        'NETZACH': { x: width * 0.3, y: height * 0.7 },
+        'HOD': { x: width * 0.7, y: height * 0.7 },
+        'YESOD': { x: width * 0.5, y: height * 0.85 },
         'MALKUTH': { x: width * 0.5, y: height * 0.95 }
     };
 }
 
-function drawPaths(ctx, positions) {
-    // Desenhar linhas entre as Sephiroth (caminhos simplificados)
+function drawSephiroth(ctx, positions) {
+    Object.entries(positions).forEach(([sephirah, pos]) => {
+        const sephirahData = TREE_OF_LIFE.sephiroth[sephirah];
+        const isActivated = STATE.treeJourney.activatedSephiroth.has(sephirah);
+        const isCurrent = STATE.treeJourney.currentSephirah === sephirah;
+        const hasMilestone = sephirahData.milestone && 
+                            STATE.treeJourney.completedMilestones.has(sephirahData.milestone);
+        
+        // Tamanho baseado no estado
+        let radius = isCurrent ? 22 : isActivated ? 18 : 12;
+        let glowIntensity = isCurrent ? 20 : isActivated ? 15 : 0;
+        
+        // Cor baseada no estado
+        let color = isActivated ? sephirahData.color : '#333333';
+        if (hasMilestone) color = '#00ff00'; // Verde para milestones completos
+        
+        // Desenhar brilho
+        if (glowIntensity > 0) {
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, radius + 8, 0, Math.PI * 2);
+            ctx.fillStyle = `${color}${Math.floor(glowIntensity).toString(16).padStart(2, '0')}`;
+            ctx.fill();
+        }
+        
+        // Desenhar círculo principal
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Borda
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = isActivated ? '#00f2ff' : '#666666';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Símbolo para milestones
+        if (hasMilestone) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✓', pos.x, pos.y);
+        }
+        
+        // Nome da Sephirah (apenas se ativada e tiver espaço)
+        if (isActivated && radius > 15) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 11px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText(sephirahData.name, pos.x, pos.y + radius + 15);
+        }
+    });
+}
+
+function drawConnections(ctx, positions) {
+    // Conexões padrão da Árvore da Vida
     const connections = [
         ['KETHER', 'CHOCHMAH'],
         ['KETHER', 'BINAH'],
@@ -551,97 +709,52 @@ function drawPaths(ctx, positions) {
         
         if (!fromPos || !toPos) return;
         
+        // Verificar se ambas as Sephiroth estão ativadas
+        const fromActivated = STATE.treeJourney.activatedSephiroth.has(from);
+        const toActivated = STATE.treeJourney.activatedSephiroth.has(to);
+        
         ctx.beginPath();
         ctx.moveTo(fromPos.x, fromPos.y);
         ctx.lineTo(toPos.x, toPos.y);
         
-        // Estilo do caminho
-        const isActivated = STATE.treeJourney.activatedSephiroth.has(from) && 
-                           STATE.treeJourney.activatedSephiroth.has(to);
-        
-        ctx.strokeStyle = isActivated ? 
-            `rgba(0, 242, 255, ${0.3 + STATE.quantumState.coherence * 0.3})` : 
-            'rgba(255, 255, 255, 0.1)';
-        
-        ctx.lineWidth = isActivated ? 3 : 1;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-        
-        // Brilho para caminhos ativados
-        if (isActivated) {
+        // Estilo da conexão
+        if (fromActivated && toActivated) {
+            ctx.strokeStyle = `rgba(0, 242, 255, ${0.3 + STATE.quantumState.coherence * 0.3})`;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            
+            // Efeito de brilho
             ctx.shadowColor = '#00f2ff';
-            ctx.shadowBlur = 15;
-            ctx.stroke();
+            ctx.shadowBlur = 10;
+        } else {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
             ctx.shadowBlur = 0;
         }
-    });
-}
-
-function drawSephiroth(ctx, positions) {
-    Object.entries(positions).forEach(([sephirah, pos]) => {
-        const sephirahData = TREE_OF_LIFE.sephiroth[sephirah];
-        const isActivated = STATE.treeJourney.activatedSephiroth.has(sephirah);
-        const isCurrent = STATE.treeJourney.currentSephirah === sephirah;
         
-        // Tamanho baseado no estado
-        let radius = isCurrent ? 25 : isActivated ? 20 : 15;
-        let glowIntensity = isCurrent ? 25 : isActivated ? 15 : 0;
-        
-        // Cor baseada no estado
-        let color = isActivated ? sephirahData.color : '#333333';
-        
-        // Desenhar brilho
-        if (glowIntensity > 0) {
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, radius + 10, 0, Math.PI * 2);
-            ctx.fillStyle = `${color}${Math.floor(glowIntensity * 1.5).toString(16).padStart(2, '0')}`;
-            ctx.fill();
-        }
-        
-        // Desenhar círculo principal
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        
-        // Borda
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = isActivated ? '#00f2ff' : '#666666';
-        ctx.lineWidth = 2;
         ctx.stroke();
-        
-        // Nome da Sephirah
-        if (isActivated) {
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 14px Orbitron';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(sephirahData.name, pos.x, pos.y);
-            
-            // Elemento
-            ctx.fillStyle = '#00f2ff';
-            ctx.font = '10px Orbitron';
-            ctx.fillText(sephirahData.element, pos.x, pos.y + radius + 15);
-        }
+        ctx.shadowBlur = 0;
     });
 }
 
 function updateTreeJourney() {
     // Determinar Sephirah atual baseado na questão
-    const questionNumber = STATE.currentQuestion + 1;
+    const questionNumber = STATE.currentQuestion;
     let currentSephirah = 'MALKUTH';
+    let currentBatch = 0;
     
     Object.entries(TREE_OF_LIFE.sephiroth).forEach(([sephirah, data]) => {
-        if (questionNumber >= data.questionRange[0] && 
-            questionNumber <= data.questionRange[1]) {
+        if (questionNumber >= data.questionRange[0] - 1 && 
+            questionNumber <= data.questionRange[1] - 1) {
             currentSephirah = sephirah;
+            currentBatch = data.level;
         }
     });
     
     // Atualizar estado
     STATE.treeJourney.currentSephirah = currentSephirah;
     STATE.treeJourney.activatedSephiroth.add(currentSephirah);
+    STATE.treeJourney.currentBatch = currentBatch;
     
     // Atualizar UI
     updateJourneyUI();
@@ -672,25 +785,36 @@ function updateProgressBar() {
     
     if (!progressFill) return;
     
-    // Calcular progresso baseado nas Sephiroth ativadas
-    const totalSephiroth = Object.keys(TREE_OF_LIFE.sephiroth).length;
-    const activatedCount = STATE.treeJourney.activatedSephiroth.size;
-    const progressPercentage = (activatedCount / totalSephiroth) * 100;
+    // Calcular progresso baseado nas questões e milestones
+    const questionProgress = STATE.currentQuestion / SYSTEM_CONFIG.maxQuestions;
+    const milestoneProgress = STATE.treeJourney.completedMilestones.size / 9;
+    const combinedProgress = (questionProgress * 0.3) + (milestoneProgress * 0.7);
     
-    progressFill.style.width = `${progressPercentage}%`;
+    progressFill.style.width = `${Math.min(100, combinedProgress * 100)}%`;
     
-    // Atualizar milestones
+    // Atualizar milestones visuais
     milestoneDots.forEach(dot => {
         const milestone = dot.dataset.milestone;
         if (STATE.treeJourney.completedMilestones.has(milestone)) {
             dot.classList.add('active', 'unlocked');
-        } else if (STATE.treeJourney.milestoneThresholds[milestone] <= 
-                  (STATE.currentQuestion + 1)) {
-            dot.classList.add('active');
         } else {
-            dot.classList.remove('active', 'unlocked');
+            const threshold = STATE.treeJourney.milestoneThresholds[milestone];
+            const currentScore = getLeadingAnimalScore();
+            if (currentScore >= threshold) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active', 'unlocked');
+            }
         }
     });
+}
+
+function getLeadingAnimalScore() {
+    let maxScore = 0;
+    Object.values(STATE.scores).forEach(score => {
+        if (score > maxScore) maxScore = score;
+    });
+    return maxScore;
 }
 
 // ========== SISTEMA DE MILESTONES ==========
@@ -722,6 +846,8 @@ function checkMilestones() {
             
             // Atualizar botão de observação
             updateObservationButton();
+            
+            console.log(`[MILESTONE] ${milestone} desbloqueado para ${leadingAnimal}`);
         }
     });
 }
@@ -745,11 +871,9 @@ function revealMilestone(milestone, animalKey) {
         case 'd':
             revealDescription(animalData);
             break;
-        case 'p':
-        case 'e':
-        case 'f':
-            // Para os outros milestones, apenas atualizar o botão de observação
-            break;
+        default:
+            // Para outros milestones (p, e, f) apenas atualizar estado
+            console.log(`[REVELAÇÃO] Milestone ${milestone} registrado para ${animalData.n}`);
     }
 }
 
@@ -759,8 +883,11 @@ function revealName(animalData) {
     const card = document.getElementById('revelation-name');
     
     if (nameElement) nameElement.textContent = animalData.n;
-    if (hintElement) hintElement.textContent = animalData.d.split('.')[0];
-    if (card) card.style.display = 'block';
+    if (hintElement) hintElement.textContent = animalData.d.split('.')[0] + '.';
+    if (card) {
+        card.style.display = 'block';
+        card.style.animation = 'cardReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    }
 }
 
 function revealChakra(animalData) {
@@ -778,13 +905,19 @@ function revealChakra(animalData) {
         };
         symbolElement.textContent = chakraSymbols[animalData.c] || '●';
     }
-    if (card) card.style.display = 'block';
+    if (card) {
+        card.style.display = 'block';
+        card.style.animation = 'cardReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    }
 }
 
 function revealStats(animalData) {
     // Mostrar container de stats
     const statsContainer = document.getElementById('stats-revelation');
-    if (statsContainer) statsContainer.style.display = 'block';
+    if (statsContainer) {
+        statsContainer.style.display = 'block';
+        statsContainer.style.animation = 'statsReveal 1s ease';
+    }
     
     // Atualizar valores com animação
     setTimeout(() => {
@@ -815,7 +948,10 @@ function revealDescription(animalData) {
     const card = document.getElementById('revelation-desc');
     
     if (descElement) descElement.textContent = animalData.d;
-    if (card) card.style.display = 'block';
+    if (card) {
+        card.style.display = 'block';
+        card.style.animation = 'descReveal 1.2s ease';
+    }
 }
 
 function showMilestoneNotification(milestone, animalKey) {
@@ -833,6 +969,9 @@ function showMilestoneNotification(milestone, animalKey) {
             <div class="sephirah-name">${sephirahData.name}</div>
             <div class="revelation-text">${getMilestoneName(milestone)} REVELADO</div>
             <div class="element-tag">${sephirahData.element}</div>
+            <div style="margin-top: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.8)">
+                ${animalData.n}
+            </div>
         </div>
     `;
     
@@ -863,20 +1002,51 @@ function updateObservationButton() {
     if (!observeBtn) return;
     
     const completedCount = STATE.treeJourney.completedMilestones.size;
+    const canObserve = completedCount >= SYSTEM_CONFIG.observationThreshold || 
+                      STATE.quantumState.maxProbability >= 0.75;
     
-    if (completedCount > 0) {
+    if (canObserve) {
         observeBtn.disabled = false;
         observeBtn.querySelector('.btn-text').textContent = 
             `OBSERVAR (${completedCount}/9)`;
-    }
-    
-    // Se todos os milestones estão completos, ativar botão de completar
-    if (completedCount >= 9) {
-        const completeBtn = document.getElementById('complete-btn');
-        if (completeBtn) {
-            completeBtn.disabled = false;
+        
+        // Se tem probabilidade alta, sugerir observação
+        if (STATE.quantumState.maxProbability >= 0.85) {
+            showObservationSuggestion();
         }
+    } else {
+        observeBtn.disabled = true;
+        observeBtn.querySelector('.btn-text').textContent = 
+            `AGUARDANDO (${completedCount}/${SYSTEM_CONFIG.observationThreshold})`;
     }
+}
+
+function showObservationSuggestion() {
+    // Evitar múltiplas sugestões
+    if (document.querySelector('.suggestion-notification')) return;
+    
+    const suggestion = document.createElement('div');
+    suggestion.className = 'sephirah-notification suggestion-notification';
+    suggestion.innerHTML = `
+        <div class="notification-content">
+            <div class="sephirah-name">SUGESTÃO QUÂNTICA</div>
+            <div class="revelation-text">ALTA PROBABILIDADE DETECTADA</div>
+            <div style="margin-top: 10px; font-size: 0.9rem;">
+                Probabilidade atual: ${Math.round(STATE.quantumState.maxProbability * 100)}%<br>
+                O sistema recomenda observação para revelar seu animal de poder.
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(suggestion);
+    
+    setTimeout(() => {
+        suggestion.classList.add('show');
+        setTimeout(() => {
+            suggestion.classList.remove('show');
+            setTimeout(() => suggestion.remove(), 500);
+        }, 4000);
+    }, 10);
 }
 
 function performObservation() {
@@ -901,7 +1071,7 @@ function collapseWaveFunction() {
     const probabilities = Array.from(superposition.values());
     const animals = Array.from(superposition.keys());
     
-    // Simulação do colapso quântico
+    // Simulação do colapso quântico baseado nas probabilidades
     let random = Math.random();
     let cumulative = 0;
     let collapsedAnimal = null;
@@ -917,7 +1087,8 @@ function collapseWaveFunction() {
     STATE.quantumState.collapsedAnimal = collapsedAnimal;
     STATE.quantumState.observationPoints = STATE.treeJourney.completedMilestones.size;
     
-    console.log('[QUANTUM] Função de onda colapsada:', collapsedAnimal);
+    console.log('[QUANTUM] Função de onda colapsada:', collapsedAnimal, 
+        'com probabilidade', probabilities[animals.indexOf(collapsedAnimal)]);
 }
 
 function updatePostObservationUI() {
@@ -935,7 +1106,13 @@ function updatePostObservationUI() {
         observeBtn.innerHTML = '<span class="btn-icon">⚛️</span><span class="btn-text">COLAPSADO</span>';
     }
     
-    // Ativar todos os caminhos na árvore
+    // Ativar botão completar
+    const completeBtn = document.getElementById('complete-btn');
+    if (completeBtn) {
+        completeBtn.disabled = false;
+    }
+    
+    // Ativar todas as Sephiroth na árvore
     Object.keys(TREE_OF_LIFE.sephiroth).forEach(sephirah => {
         STATE.treeJourney.activatedSephiroth.add(sephirah);
     });
@@ -955,7 +1132,7 @@ function revealAllMilestones() {
         revealMilestone(milestone, STATE.quantumState.collapsedAnimal);
     });
     
-    // Adicionar milestones restantes
+    // Adicionar e revelar milestones restantes
     const allMilestones = ['n', 'c', 'a', 's', 'i', 'd', 'p', 'e', 'f'];
     allMilestones.forEach(milestone => {
         if (!STATE.treeJourney.completedMilestones.has(milestone)) {
@@ -963,6 +1140,34 @@ function revealAllMilestones() {
             revealMilestone(milestone, STATE.quantumState.collapsedAnimal);
         }
     });
+    
+    // Mostrar notificação de colapso
+    showCollapseNotification(animalData);
+}
+
+function showCollapseNotification(animalData) {
+    const notification = document.createElement('div');
+    notification.className = 'sephirah-notification';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <div class="sephirah-name">COLAPSO QUÂNTICO</div>
+            <div class="revelation-text">${animalData.n} REVELADO</div>
+            <div style="margin-top: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.8)">
+                A função de onda colapsou.<br>
+                Seu animal de poder foi determinado.
+            </div>
+        </div>
+    `;
+    
+    document.querySelector('.tree-canvas-wrapper').appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 500);
+        }, 4000);
+    }, 10);
 }
 
 function completeTreeJourney() {
@@ -977,10 +1182,17 @@ function completeTreeJourney() {
     const treeWrapper = document.querySelector('.tree-canvas-wrapper');
     if (treeWrapper) {
         treeWrapper.style.boxShadow = '0 0 60px #00ff00, inset 0 0 30px rgba(0, 255, 0, 0.2)';
+        treeWrapper.style.transition = 'box-shadow 1s ease';
     }
     
     // Mostrar mensagem final
     showCompletionMessage(animalData);
+    
+    // Atualizar status
+    const statusMonitor = document.querySelector('.status-monitor');
+    if (statusMonitor) {
+        statusMonitor.textContent = 'SISTEMA_ATIVO // JORNADA_COMPLETA';
+    }
 }
 
 function showCompletionMessage(animalData) {
@@ -990,10 +1202,13 @@ function showCompletionMessage(animalData) {
     message.innerHTML = `
         <div class="notification-content">
             <div class="sephirah-name">JORNADA COMPLETA</div>
-            <div class="revelation-text">${animalData.n} REVELADO</div>
-            <div style="margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8)">
+            <div class="revelation-text">${animalData.n}</div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: rgba(255,255,255,0.8)">
                 A Árvore da Vida foi completamente ativada.<br>
                 Seu arquétipo animal foi revelado em sua totalidade.
+            </div>
+            <div style="margin-top: 15px; font-size: 0.8rem; color: rgba(0,242,255,0.8)">
+                ${animalData.d}
             </div>
         </div>
     `;
@@ -1017,13 +1232,6 @@ function showScreen(screenId) {
     const screen = document.getElementById(screenId);
     if (screen) {
         screen.classList.add('active');
-        
-        // Ajustar overflow do body
-        if (screenId === 'sc-tree') {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
     }
 }
 
@@ -1038,138 +1246,22 @@ function updateTreeJourneyUI() {
     updateJourneyUI();
     updateObservationButton();
     drawTreeOfLife();
-}
-
-// ========== SISTEMA DE MENU ==========
-function initMenu() {
-    const menuBtn = document.getElementById('menuBtn');
-    const sideMenu = document.getElementById('sideMenu');
-    const overlay = document.getElementById('menuOverlay');
     
-    if (!menuBtn || !sideMenu || !overlay) return;
-    
-    const toggleMenu = () => {
-        const isActive = sideMenu.classList.toggle('active');
-        overlay.classList.toggle('active');
-        menuBtn.setAttribute('aria-expanded', isActive);
-        document.body.style.overflow = isActive ? 'hidden' : '';
-    };
-    
-    menuBtn.addEventListener('click', toggleMenu);
-    overlay.addEventListener('click', toggleMenu);
-    
-    // Fechar menu com ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && sideMenu.classList.contains('active')) {
-            toggleMenu();
-        }
-    });
-}
-
-// ========== RODA QUÂNTICA ==========
-function initQuantumWheel() {
-    // A função handleSpinClick já está configurada em setupEventListeners
-    console.log('[WHEEL] Roda quântica inicializada');
-}
-
-// ========== PARTÍCULAS ==========
-function initParticles() {
-    const canvas = document.getElementById('particles-canvas');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    
-    // Configurar canvas
-    const resizeCanvas = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    };
-    
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    // Criar partículas
-    const particles = [];
-    const particleCount = Math.min(100, Math.floor(window.innerWidth / 15));
-    
-    for (let i = 0; i < particleCount; i++) {
-        particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            size: Math.random() * 3 + 1,
-            speedX: (Math.random() - 0.5) * 0.5,
-            speedY: (Math.random() - 0.5) * 0.5,
-            color: `rgba(0, ${Math.floor(242 + Math.random() * 13)}, 255, ${Math.random() * 0.4 + 0.1})`
-        });
-    }
-    
-    // Loop de animação
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        particles.forEach(p => {
-            // Atualizar posição
-            p.x += p.speedX;
-            p.y += p.speedY;
-            
-            // Rebater nas bordas
-            if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
-            if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-            
-            // Desenhar partícula
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = p.color;
-            ctx.fill();
-            
-            // Conexões
-            particles.forEach(other => {
-                const dx = p.x - other.x;
-                const dy = p.y - other.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < 100) {
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(other.x, other.y);
-                    ctx.strokeStyle = `rgba(0, 242, 255, ${0.1 * (1 - distance/100)})`;
-                    ctx.lineWidth = 0.3;
-                    ctx.stroke();
-                }
-            });
-        });
-        
-        requestAnimationFrame(animate);
-    }
-    
-    animate();
-}
-
-// ========== FUNÇÕES UTILITÁRIAS ==========
-function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-}
-
-function updateInitButton() {
-    const initBtn = document.getElementById('initBtn');
-    if (initBtn) {
-        initBtn.disabled = false;
-        initBtn.textContent = 'INICIAR JORNADA QUÂNTICA';
-        console.log('[UI] Botão de início atualizado e pronto');
+    // Atualizar contador de questões
+    const questionsAnswered = document.getElementById('questions-answered');
+    if (questionsAnswered) {
+        questionsAnswered.textContent = STATE.currentQuestion;
     }
 }
 
+// ========== REINICIALIZAÇÃO DO SISTEMA ==========
 function resetSystem() {
     console.log('[SYSTEM] Reiniciando sistema quântico...');
     
     // Resetar estado
     STATE.currentQuestion = 0;
     STATE.scores = {};
+    STATE.totalAnswers = 0;
     STATE.treeJourney = {
         currentSephirah: 'MALKUTH',
         activatedSephiroth: new Set(['MALKUTH']),
@@ -1182,7 +1274,8 @@ function resetSystem() {
             'n': 'YESOD', 'c': 'HOD', 'a': 'NETZACH',
             's': 'TIPHARETH', 'i': 'GEBURAH', 'd': 'CHESED',
             'p': 'BINAH', 'e': 'CHOCHMAH', 'f': 'KETHER'
-        }
+        },
+        currentBatch: 0
     };
     
     STATE.quantumState = {
@@ -1190,7 +1283,8 @@ function resetSystem() {
         collapsedAnimal: null,
         observationPoints: 0,
         entropy: 0,
-        coherence: 0
+        coherence: 0,
+        maxProbability: 0
     };
     
     STATE.currentAnimal = null;
@@ -1246,7 +1340,7 @@ function resetUI() {
     // Resetar entropia
     const totalEntropy = document.getElementById('total-entropy');
     if (totalEntropy) {
-        totalEntropy.textContent = '0%';
+        totalEntropy.textContent = '0';
     }
     
     // Esconder todas as revelações
@@ -1272,8 +1366,38 @@ function resetUI() {
         completeBtn.disabled = true;
     }
     
+    // Resetar efeitos visuais
+    const treeWrapper = document.querySelector('.tree-canvas-wrapper');
+    if (treeWrapper) {
+        treeWrapper.style.boxShadow = '';
+    }
+    
     // Redesenhar árvore
     drawTreeOfLife();
+    
+    // Resetar status
+    const statusMonitor = document.querySelector('.status-monitor');
+    if (statusMonitor) {
+        statusMonitor.textContent = 'SISTEMA_ATIVO // MODO_QUÂNTICO';
+    }
+}
+
+// ========== FUNÇÕES UTILITÁRIAS ==========
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function updateInitButton() {
+    const initBtn = document.getElementById('initBtn');
+    if (initBtn) {
+        initBtn.disabled = false;
+        initBtn.innerHTML = '<span class="btn-pulse"></span>INICIAR JORNADA QUÂNTICA';
+    }
 }
 
 function hideAllRevelations() {
@@ -1288,20 +1412,9 @@ function hideAllRevelations() {
         const element = document.getElementById(id);
         if (element) {
             element.style.display = 'none';
+            element.style.animation = '';
         }
     });
-}
-
-function initializeQuantumSuperposition() {
-    const animals = Object.keys(STATE.animals);
-    const initialProbability = 1 / animals.length;
-    
-    animals.forEach(animal => {
-        STATE.quantumState.superposition.set(animal, initialProbability);
-    });
-    
-    console.log('[QUANTUM] Superposição inicializada com', 
-        STATE.quantumState.superposition.size, 'animais');
 }
 
 function showError(message) {
@@ -1312,7 +1425,7 @@ function showError(message) {
             <div class="sephirah-name" style="color: #ff4444;">ERRO</div>
             <div class="revelation-text">${message}</div>
             <button onclick="this.parentElement.parentElement.remove()" 
-                    style="margin-top: 20px; padding: 10px 20px; background: #ff4444; border: none; color: white; cursor: pointer;">
+                    style="margin-top: 20px; padding: 10px 20px; background: #ff4444; border: none; color: white; cursor: pointer; border-radius: 5px;">
                 FECHAR
             </button>
         </div>
@@ -1322,9 +1435,144 @@ function showError(message) {
     setTimeout(() => errorDiv.classList.add('show'), 10);
 }
 
+function showCompleteResult() {
+    if (!STATE.quantumState.collapsedAnimal) return;
+    
+    const animalData = STATE.animals[STATE.quantumState.collapsedAnimal];
+    const notification = document.createElement('div');
+    notification.className = 'sephirah-notification';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <div class="sephirah-name">RESULTADO FINAL</div>
+            <div class="revelation-text" style="font-size: 1.5rem;">${animalData.n}</div>
+            <div style="margin-top: 15px; color: rgba(0,242,255,0.9);">
+                ${animalData.c} • ${animalData.p}
+            </div>
+            <div style="margin-top: 15px; font-size: 0.9rem; color: rgba(255,255,255,0.8)">
+                ${animalData.d}
+            </div>
+            <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.8rem; color: rgba(0,242,255,0.7)">AÇÃO</div>
+                    <div style="font-size: 1.2rem; color: white">${Math.round(animalData.a * 100)}%</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.8rem; color: rgba(0,242,255,0.7)">SENSIBILIDADE</div>
+                    <div style="font-size: 1.2rem; color: white">${Math.round(animalData.s * 100)}%</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.8rem; color: rgba(0,242,255,0.7)">INTUIÇÃO</div>
+                    <div style="font-size: 1.2rem; color: white">${Math.round(animalData.i * 100)}%</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 10);
+}
+
+// ========== SISTEMA DE PARTÍCULAS ==========
+function initParticles() {
+    const canvas = document.getElementById('particles-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Configurar canvas
+    const resizeCanvas = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Criar partículas
+    const particles = [];
+    const particleCount = Math.min(80, Math.floor(window.innerWidth / 20));
+    
+    for (let i = 0; i < particleCount; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 1,
+            speedX: (Math.random() - 0.5) * 0.3,
+            speedY: (Math.random() - 0.5) * 0.3,
+            color: `rgba(0, ${Math.floor(242 + Math.random() * 13)}, 255, ${Math.random() * 0.3 + 0.1})`
+        });
+    }
+    
+    // Loop de animação
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        particles.forEach(p => {
+            // Atualizar posição
+            p.x += p.speedX;
+            p.y += p.speedY;
+            
+            // Rebater nas bordas
+            if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+            
+            // Desenhar partícula
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+            
+            // Conexões
+            particles.forEach(other => {
+                const dx = p.x - other.x;
+                const dy = p.y - other.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 80) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(other.x, other.y);
+                    ctx.strokeStyle = `rgba(0, 242, 255, ${0.08 * (1 - distance/80)})`;
+                    ctx.lineWidth = 0.2;
+                    ctx.stroke();
+                }
+            });
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+}
+
 // ========== INICIALIZAÇÃO ==========
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
-    initApp();
+    setTimeout(initApp, 100);
 }
+
+// ========== DEBUG ==========
+window.debugAnima = function() {
+    console.log('=== ANIMA DEBUG INFO ===');
+    console.log('Estado atual:', {
+        questões: STATE.currentQuestion,
+        milestones: STATE.treeJourney.completedMilestones.size,
+        probabilidadeMáxima: STATE.quantumState.maxProbability,
+        coerência: STATE.quantumState.coherence,
+        animalColapsado: STATE.quantumState.collapsedAnimal,
+        shouldContinueQuiz: shouldContinueQuiz()
+    });
+    console.log('Scores:', STATE.scores);
+    console.log('Superposição:', Array.from(STATE.quantumState.superposition.entries()));
+};
+
+window.forceObservation = function() {
+    if (!STATE.quantumState.collapsedAnimal) {
+        performObservation();
+    } else {
+        showCompleteResult();
+    }
+};
+
+window.resetApp = resetSystem;
